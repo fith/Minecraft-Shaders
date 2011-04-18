@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Name</key>
+	<string>3D Dot Minecraft</string>
+	<key>Author</key>
+	<string>Compiled by fith using code from Daxnitro, Yourself, Miso and others to be added...</string>
+	<key>Identifier</key>
+	<string>com.daxnitro.myshaders</string>
+	<key>Version</key>
+	<string>1.1.0</string>
+	<key>MCVersions</key>
+	<string>B1.4.1</string>
+	<key>ShortDescription</key>
+	<string>Bloom, static depth of field, waving wheat/grass/flowers/trees/water, luminance alpha water.</string>
+</dict>
+</plist>
