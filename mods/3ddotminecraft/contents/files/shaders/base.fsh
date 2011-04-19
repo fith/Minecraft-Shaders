@@ -294,8 +294,8 @@ void main() {
 	if ((tex >= 204 && tex <= 207) || (tex >= 221 && tex <= 223)) {
 		float brightness = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
 
-		//vec3 col = ContrastSaturationBrightness( vec3(baseColor), 1.5, brightness, 1.0);
-		baseColor = vec4(BlendLinearDodge(vec3(baseColor), vec3(baseColor)), (1.0-y_disp)-baseColor.a);
+		vec3 col = ContrastSaturationBrightness( vec3(baseColor), 1.5, brightness, 1.0);
+		baseColor = vec4(BlendLinearDodge(col, col), clamp((abs(1.0-y_disp)*baseColor.a), 0.0, 1.0));
 	}
 #endif
 	gl_FragColor = baseColor;        
