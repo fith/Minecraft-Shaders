@@ -1,3 +1,11 @@
+/////////////////////////////////
+// configuration
+// comment out the #define to disable a setting
+/////////////////////////////////
+#define TRANSPARENT_WAVING_WATER
+
+
+
 /*
 ** Photoshop & misc math
 ** Blending modes, RGB/HSL/Contrast/Desaturate, levels control
@@ -117,7 +125,7 @@ vec3 HSLToRGB(vec3 hsl)
 */
 
 // For all settings: 1.0 = 100% 0.5=50% 1.5 = 150%
-vec3 ContrastSaturationBrightness(vec3 color, float brt, float sat, float con)
+vec3 ContrastSaturationBrightness(vec3 color, float con, float sat, float brt)
 {
 	// Increase or decrease theese values to adjust r, g and b color channels seperately
 	const float AvgLumR = 0.5;
@@ -241,12 +249,16 @@ vec3 BlendLuminosity(vec3 base, vec3 blend)
 #define LevelsControlInput(color, minInput, gamma, maxInput)				GammaCorrection(LevelsControlInputRange(color, minInput, maxInput), gamma)
 #define LevelsControlOutputRange(color, minOutput, maxOutput) 			mix(vec3(minOutput), vec3(maxOutput), color)
 #define LevelsControl(color, minInput, gamma, maxInput, minOutput, maxOutput) 	LevelsControlOutputRange(LevelsControlInput(color, minInput, gamma, maxInput), minOutput, maxOutput)
+/////////////////////////////////
+// end of photoshop functions
+/////////////////////////////////
 
 
 
 
 /////////////////////////////////
-#define SQUIRM
+// start of minecraft shader
+/////////////////////////////////
 #define SHINY_WATER
 const float PI = 3.1415926535897932384626433832795;
 const float PI2 = 6.283185307179586476925286766559;
@@ -259,141 +271,34 @@ uniform sampler2D sampler1;
 
 uniform float near;
 uniform float far;
-
 uniform int fogMode;
-
 uniform int worldTime;
-uniform int renderType;
 
 uniform float aspectRatio;
 uniform float displayHeight;
 uniform float displayWidth;
 
-#define SQUIRM_DISTANCE 10.0
-#define MAX_DISTANCE 100.0
 varying vec3 normal;
-
 varying float distance;
-varying float contrast;
+varying float y_disp;
 
-varying float texID;
 int getTextureID(vec2 coord);
 
-//vec3 ContrastSaturationBrightness(vec3 color, float brt, float sat, float con);
-
-
-
 void main() {
-    //texID = float(getTextureID(gl_TexCoord[0].st));
-	
-//distance = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
-//	if (distance <= MAX_DISTANCE && viewVector.z < 0.0) {
+	vec3 coord = vec3(gl_TexCoord[0].st, 1.0) ;
+	vec4 baseColor = texture2D(sampler0, coord.st) * gl_Color;
 
-vec3 coord = vec3(gl_TexCoord[0].st, 1.0) ;
-int tex = getTextureID(gl_TexCoord[0].st);
-#ifdef SQUIRM
-//    		if ((texID >= 204.0 && tex <= 207) || (tex >= 221 && tex <= 223) && distance < SQUIRM_DISTANCE) {
-    		if ((tex >= 204 && tex <= 207) || (tex >= 221 && tex <= 223)) {
-/*
-			float t = mod(float(worldTime), 2000.0)/2000.0;
-			vec3 offset, base;
-			base = mod(coord, 1.0);
-			coord = coord - base;
-	//		coord = vec3(modf(16.0*coord, base));
+#ifdef TRANSPARENT_WAVING_WATER
+	int tex = getTextureID(gl_TexCoord[0].st);
 
-			offset = vec3(cos(PI2*coord.s)*cos(PI2*(coord.t + 2.0*t))*cos(PI2*t)/40.0,
-                     -cos(PI2*(coord.s + t))*sin(2.0*PI2*coord.t)/40.0,0);
+	if ((tex >= 204 && tex <= 207) || (tex >= 221 && tex <= 223)) {
+		float brightness = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
 
-			coord = mod(coord + offset, vec3(1.0)) + base;
-		
-			//coord = coord;
-		//	gl_FragColor = texture2D(sampler0, coord.st/16.0) * vertColor;
-	*/	
-
-
-		vec4 baseColor = texture2D(sampler0, coord.st) * gl_Color;
-		#ifdef SHINY_WATER
-			if ((tex >= 204 && tex <= 207) || (tex >= 221 && tex <= 223)) {
-				float averageRGB = ((baseColor.r+baseColor.g+baseColor.b)/3.0);
-				float averageRG = ((baseColor.r+baseColor.g)*0.5);
-				float brightness = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
-
-//baseColor.a = 1.0;
-//				float acontrast = 2.0;
-				//baseColor = (baseColor - 0.5) * acontrast + 0.5;
-//baseColor *= 1.5;				
-//baseColor.a = baseColor.b;
-
-/*
-baseColor.a = baseColor.a*(1.0-brightness);
-baseColor = vec4( ContrastSaturationBrightness( vec3(baseColor), brightness*5.0, brightness*1.0, brightness*5.0), baseColor.a);
-*/
- brightness = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
-vec4 col = vec4(ContrastSaturationBrightness( vec3(baseColor), brightness*5.0, brightness, brightness*5.0), baseColor.a);
-
-
-// Luminosity
-vec3 pass1 = mix(vec3(baseColor), BlendLuminosity(vec3(baseColor), vec3(col) + vec3(0.08)), 0.5);
-
-// Linear light at 40%
-vec3 pass2 = mix(pass1, BlendScreen(pass1, vec3(col)), 0.4);
-// Final
-baseColor = vec4(pass2, 1.0);
-
-baseColor.a = baseColor.a*(1.0-brightness)-0.2;
-
-
-
-	//	 float brightness2 = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
-//baseColor.a = 1.0-brightness2;
-// averageRG = ((baseColor.r+baseColor.g)*0.5);
-//				if(baseColor.b > 1.0){ baseColor.b = 1.0;}
-//				if(baseColor.b < 0.0){ baseColor.b = 0.0;}
-//baseColor.a = 1.0-brightness;//* (brightness)) ;//+ (baseColor.b * brightness);
-
-//baseColor.a = ((baseColor.b) * (((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b))));
-//baseColor.a = (((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b)));
-//baseColor.a +=  (1.0-((baseColor.r+baseColor.g)*0.5));
-
-//((baseColor.r+baseColor.g)*0.5)*
-			//	baseColor.a = (1.0-baseColor.b); //* ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
-				
-			//	if(baseColor.b > 1.0){ baseColor.b = 1.0;}
-//baseColor.a += (1.0-(baseColor.b));
-
-
-
-				//baseColor *= 1.0+((baseColor.r+baseColor.g+baseColor.b)/3.0);
-			//	float averageRGB = ((baseColor.r+baseColor.g+baseColor.b)*0.33);
-		//		float averageRG = ((baseColor.r+baseColor.g)*0.5);
-	//			float brightness = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
-				//baseColor.a = 1.0-brightness;
-//				baseColor = (baseColor - 0.5) * ((contrast) + 0.5);
-				//baseColor *= 1.5;
-			//	float acontrast = 4.0;
-				//baseColor = (baseColor - 0.5) * acontrast + 0.5;
-				//baseColor.a = ((0.299*baseColor.r) + (0.587*baseColor.g) + (0.114*baseColor.b));
-				//baseColor.a -= 1.0-((baseColor.r+baseColor.g+baseColor.b)/3.0);
-			//	baseColor.a = 1.0-baseColor.b;
-//baseColor.r = (baseColor.r - 0.5) * acontrast + 0.5;
-//baseColor.b = (baseColor.b - 0.5) * acontrast + 0.5;
-//baseColor.g = (baseColor.g - 0.5) * acontrast + 0.5;
-//			//	baseColor.b = baseColor.b * ((baseColor.r+baseColor.g)*0.5); 
-			//	clamp(baseColor.a, 0.1, 0.9);
-
-			}
-		#endif
-		gl_FragColor = baseColor * gl_Color;        
-    } else {
-#endif
-
-    gl_FragColor = texture2D(sampler0, gl_TexCoord[0].st) * gl_Color;        
-
-#ifdef SQUIRM
+		//vec3 col = ContrastSaturationBrightness( vec3(baseColor), 1.5, brightness, 1.0);
+		baseColor = vec4(BlendLinearDodge(vec3(baseColor), vec3(baseColor)), (1.0-y_disp)-baseColor.a);
 	}
 #endif
-
-
+	gl_FragColor = baseColor;        
 
     if (abs(gl_FragColor.a) > 0.005) {
 		if (fogMode == GL_EXP) {
@@ -410,23 +315,3 @@ int getTextureID(vec2 coord) {
     int j = int(floor(16.0*coord.t));
     return i + 16*j;
 }
-
-// For all settings: 1.0 = 100% 0.5=50% 1.5 = 150%
-/*
-vec3 ContrastSaturationBrightness(vec3 color, float brt, float sat, float con)
-{
-	// Increase or decrease theese values to adjust r, g and b color channels seperately
-	const float AvgLumR = 0.5;
-	const float AvgLumG = 0.5;
-	const float AvgLumB = 0.5;
-	
-	const vec3 LumCoeff = vec3(0.2125, 0.7154, 0.0721);
-	
-	vec3 AvgLumin = vec3(AvgLumR, AvgLumG, AvgLumB);
-	vec3 brtColor = color * brt;
-	vec3 intensity = vec3(dot(brtColor, LumCoeff));
-	vec3 satColor = mix(intensity, brtColor, sat);
-	vec3 conColor = mix(AvgLumin, satColor, con);
-	return conColor;
-}
-*/

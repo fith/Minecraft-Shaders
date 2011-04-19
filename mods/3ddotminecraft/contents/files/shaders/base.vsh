@@ -23,13 +23,16 @@ uniform int renderType;
 varying float distance;
 
 varying float texID;
-varying float contrast;
+varying vec4 position;
+varying float y_disp;
 
 int getTextureID(vec2 coord);
-
+	
 void main() {
-    vec4 position = gl_Vertex;
-	int tex = getTextureID(gl_MultiTexCoord0.st);
+    	position = gl_Vertex;
+	texID = float(getTextureID(gl_MultiTexCoord0.st));
+	int tex = int(texID);
+
 #ifdef WAVING_WHEAT
     if (87 < tex && tex < 96 && renderType != 0) {
         float t = mod(float(worldTime), 200.0)/200.0;
@@ -43,6 +46,7 @@ void main() {
 #ifdef CURVATURE
     if (gl_Color.a != 0.8) {
         // Not a cloud.
+		// this is not a conclusive test. :|
 
         float dist = (length(position) - FLAT_RADIUS)/WORLD_RADIUS;
 
@@ -77,16 +81,10 @@ if ((tex == 52 || tex == 53 || tex == 132 || tex == 133)&& renderType == 1)  {
 	if ( ((tex >= 204 && tex <= 207) || (tex >= 221 && tex <= 223)) && renderType == 0) {
         float t = mod(float(worldTime), 1000.0)/400.0;
         vec2 pos = position.xz/16.0;
-        position.y += (Water_level + cos((PI2)*(2.0 * (pos.x + pos.y) + PI * t)))/(Wave_pitch);
-		
+        y_disp = (Water_level + cos((PI2)*(2.0 * (pos.x + pos.y) + PI * t)))/(Wave_pitch) +
+						((Water_level*0.25) + sin((PI2)*(6.0 * (pos.x + pos.y) + PI * (t*0.5))))/(Wave_pitch*0.66);
+		position.y += y_disp;
     }
-	if ( ((tex >= 204 && tex <= 207) || (tex >= 221 && tex <= 223)) && renderType == 0) {
-        float t = mod(float(worldTime), 1000.0)/200.0;
-        vec2 pos = position.xz/16.0;
-        position.y += ((Water_level*0.5) + sin((PI2)*(5.0 * (pos.x + pos.y) + PI * t)))/(Wave_pitch*0.7);
-		
-    }
-	contrast = position.y;
 #endif
 
 #if defined(CURVATURE) || defined(WAVING_WHEAT) || defined(WAVING_LEAVES) || defined(WAVING_PLANTS) || defined(WAVING_WATER)
@@ -96,7 +94,7 @@ if ((tex == 52 || tex == 53 || tex == 132 || tex == 133)&& renderType == 1)  {
 #else
     gl_Position = ftransform();
 #endif
-distance = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
+//distance = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
 /*
     if (renderType != 0) {
         texID = float(getTextureID(gl_MultiTexCoord0.st));
@@ -104,14 +102,11 @@ distance = sqrt(position.x * position.x + position.y * position.y + position.z *
     else {
         texID = -1.0;
     }
-*/
-	texID = float(getTextureID(gl_MultiTexCoord0.st));
+*/	
     gl_FrontColor = gl_BackColor = gl_Color;
     gl_TexCoord[0] = gl_MultiTexCoord0;;
-    gl_FogFragCoord = gl_Position.z;
+    gl_FogFragCoord = gl_Position.z;	
 
-	
-	
 }
 
 int getTextureID(vec2 coord) {

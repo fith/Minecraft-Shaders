@@ -33,6 +33,7 @@ uniform float far;
 const float HYPERFOCAL = HYPERFOCAL_DEFAULT;
 const float PICONSTANT = 3.14159;
 
+
 //shiny water
 //#define SHINY_WATER
 varying float texID;
@@ -41,7 +42,7 @@ int getTextureID(vec2 coord);
 float getCursorDepth(vec2 coord);
 float getDepth(vec2 coord);
 vec4 getBloomColor(vec4 baseColor);
-vec4 getDoFColor();
+vec4 getDoFColor(float depth);
 vec4 getSampleWithBoundsCheck(vec2 offset);
 vec2 texcoord = vec2(gl_TexCoord[0]).st;
 vec4 texcolor = texture2D(sampler0, gl_TexCoord[0].st);
@@ -77,36 +78,25 @@ void main(void)
 		return;
 	}
 
-	float cursorDepth = getCursorDepth(vec2(0.5, 0.5));
 
-	float hyperfocal = HYPERFOCAL;
     // foreground blur = 1/2 background blur. Blur should follow exponential pattern until cursor = hyperfocal -- Cursor before hyperfocal
     // Blur should go from 0 to 1/2 hyperfocal then clear to infinity -- Cursor @ hyperfocal.
     // hyperfocal to inifity is clear though dof extends from 1/2 hyper to hyper -- Cursor beyond hyperfocal
+	float cursorDepth = getCursorDepth(vec2(0.5, 0.5));
     float mixAmount = 0.0;
     
     if (depth < cursorDepth) {
-    		mixAmount = clamp(2.0 * ((clamp(cursorDepth, 0.0, hyperfocal) - depth) / (clamp(cursorDepth, 0.0, hyperfocal))), 0.0, 1.0);
-	} else if (cursorDepth == hyperfocal) {
+    		mixAmount = clamp(2.0 * ((clamp(cursorDepth, 0.0, HYPERFOCAL) - depth) / (clamp(cursorDepth, 0.0, HYPERFOCAL))), 0.0, 1.0);
+	} else if (cursorDepth == HYPERFOCAL) {
 		mixAmount = 0.0;
 	} else {
-		mixAmount =  1.0 - clamp((((cursorDepth * hyperfocal) / (hyperfocal - cursorDepth)) - (depth - cursorDepth)) / ((cursorDepth * hyperfocal) / (hyperfocal - cursorDepth)), 0.0, 1.0);
+		mixAmount =  1.0 - clamp((((cursorDepth * HYPERFOCAL) / (HYPERFOCAL - cursorDepth)) - (depth - cursorDepth)) / ((cursorDepth * HYPERFOCAL) / (HYPERFOCAL - cursorDepth)), 0.0, 1.0);
 	}
-
-
-
-
 	
     if (mixAmount != 0.0) {
-		vec4 col = getDoFColor();
-///		gl_FragColor = mix(baseColor, col, mixAmount);
-		baseColor = mix(baseColor, col, mixAmount);
-   	} else {
-   		//gl_FragColor = baseColor;
+		baseColor = mix(baseColor, getDoFColor(depth), mixAmount);
    	}
-
 	gl_FragColor = getBloomColor(baseColor);
-
 }
 
 float getDepth(vec2 coord) {
@@ -140,63 +130,64 @@ vec4 getBloomColor(vec4 baseColor) {
 	return bloomColor;
 }
 
-vec4 getDoFColor() {
+vec4 getDoFColor(float depth) {
 	vec4 blurredColor = vec4(0.0);
-	float depth = getDepth(gl_TexCoord[0].xy);
-	vec2 aspectCorrection = vec2(1.0, aspectRatio) * 0.005;
 
+	vec2 aspectCorrection = vec2(1.0, aspectRatio) * 0.005;
 	vec2 ac0_4 = 0.4 * aspectCorrection;	// 0.
 	vec2 ac0_29 = 0.29 * aspectCorrection;	// 0.29
 	vec2 ac0_15 = 0.15 * aspectCorrection;	// 0.15
 	vec2 ac0_37 = 0.37 * aspectCorrection;	// 0.37
 	vec2 lowSpace = gl_TexCoord[0].st;
-	vec2 highSpace = 1.0 - lowSpace;
+	vec2 highSpace = 1.0 - lowSpace; 
+
 	space = vec2(min(lowSpace.s, highSpace.s), min(lowSpace.t, highSpace.t));
 		
 	if (space.s >= ac0_4.s && space.t >= ac0_4.t) {
 
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(0.0, ac0_4.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_4.s, 0.0));   
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(0.0, -ac0_4.t)); 
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_4.s, 0.0)); 
+		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(0.0, ac0_4.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_4.s, 0.0)) +   
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(0.0, -ac0_4.t)) + 
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_4.s, 0.0)) + 
 		
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_29.s, -ac0_29.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_29.s, ac0_29.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_29.s, ac0_29.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_29.s, -ac0_29.t));
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_29.s, -ac0_29.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_29.s, ac0_29.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_29.s, ac0_29.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_29.s, -ac0_29.t)) +
 		
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_15.s, ac0_37.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_37.s, ac0_15.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_37.s, -ac0_15.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_15.s, -ac0_37.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_15.s, ac0_37.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_37.s, ac0_15.t)); 
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_37.s, -ac0_15.t));
-		blurredColor += texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_15.s, -ac0_37.t));
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_15.s, ac0_37.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_37.s, ac0_15.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_37.s, -ac0_15.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_15.s, -ac0_37.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_15.s, ac0_37.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_37.s, ac0_15.t)) + 
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(-ac0_37.s, -ac0_15.t)) +
+						texture2D(sampler0, gl_TexCoord[0].st + vec2(ac0_15.s, -ac0_37.t));
 
+		//divide by 16.0
 	    blurredColor /= 16.0;
 
 	    
 	} else {
 		
-		blurredColor += getSampleWithBoundsCheck(vec2(0.0, ac0_4.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_4.s, 0.0));   
-		blurredColor += getSampleWithBoundsCheck(vec2(0.0, -ac0_4.t)); 
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_4.s, 0.0)); 
+		blurredColor += getSampleWithBoundsCheck(vec2(0.0, ac0_4.t)) +
+						getSampleWithBoundsCheck(vec2(ac0_4.s, 0.0)) +
+						getSampleWithBoundsCheck(vec2(0.0, -ac0_4.t)) + 
+						getSampleWithBoundsCheck(vec2(-ac0_4.s, 0.0)) + 
 		
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_29.s, -ac0_29.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_29.s, ac0_29.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_29.s, ac0_29.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_29.s, -ac0_29.t));
+						getSampleWithBoundsCheck(vec2(ac0_29.s, -ac0_29.t)) +
+						getSampleWithBoundsCheck(vec2(ac0_29.s, ac0_29.t)) +
+						getSampleWithBoundsCheck(vec2(-ac0_29.s, ac0_29.t)) +
+						getSampleWithBoundsCheck(vec2(-ac0_29.s, -ac0_29.t)) +
 				
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_15.s, ac0_37.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_37.s, ac0_15.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_37.s, -ac0_15.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_15.s, -ac0_37.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_15.s, ac0_37.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_37.s, ac0_15.t)); 
-		blurredColor += getSampleWithBoundsCheck(vec2(-ac0_37.s, -ac0_15.t));
-		blurredColor += getSampleWithBoundsCheck(vec2(ac0_15.s, -ac0_37.t));
+						getSampleWithBoundsCheck(vec2(ac0_15.s, ac0_37.t)) +
+						getSampleWithBoundsCheck(vec2(-ac0_37.s, ac0_15.t)) +
+						getSampleWithBoundsCheck(vec2(ac0_37.s, -ac0_15.t)) +
+						getSampleWithBoundsCheck(vec2(-ac0_15.s, -ac0_37.t)) +
+						getSampleWithBoundsCheck(vec2(-ac0_15.s, ac0_37.t)) +
+						getSampleWithBoundsCheck(vec2(ac0_37.s, ac0_15.t)) +
+						getSampleWithBoundsCheck(vec2(-ac0_37.s, -ac0_15.t)) +
+						getSampleWithBoundsCheck(vec2(ac0_15.s, -ac0_37.t));
 	
 	    blurredColor /= samples;
 	    
