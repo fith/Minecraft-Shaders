@@ -366,7 +366,7 @@ public class Hooks implements ModHooks {
 		
 		CtMethod actionPerformed = guiVideoSettings.getDeclaredMethod(GuiVideoSettings_actionPerformed, guiButtonParameter);
 		
-		actionPerformed.insertAfter("Shaders.actionPerformed($1);");
+		actionPerformed.insertAfter("Shaders." + GuiVideoSettings_actionPerformed + "($1);");
 
 		// WorldRenderer.class
 		
@@ -405,7 +405,7 @@ public class Hooks implements ModHooks {
 	
 	// Obfuscated names. Hopefully this is all that will need to be changed for future releases.
 
-	static final String EntityRenderer = "mw";
+	static final String EntityRenderer = "oy";
 	static final String EntityRenderer_mc = "h";
 	static final String EntityRenderer_renderEverything = "b";
 	static final String EntityRenderer_renderWorld = "c";
@@ -414,11 +414,11 @@ public class Hooks implements ModHooks {
 	static final String EntityRenderer_green = "this.f";
 	static final String EntityRenderer_blue = "g";
 	
-	static final String Frustrum = "pf";
+	static final String Frustrum = "rn";
 	
-	static final String EntityLiving = "jm";
+	static final String EntityLiving = "kw";
 
-	static final String RenderGlobal = "i";	
+	static final String RenderGlobal = "m";	
 	static final String RenderGlobal_renderClouds = "b";
 	static final String RenderGlobal_renderTerrain = "a";
 	static final String RenderGlobal_renderTerrain_sig = "(L"+EntityLiving+";ID)I";
@@ -426,13 +426,13 @@ public class Hooks implements ModHooks {
 
 	static final String Minecraft_renderEngine = "o";
 	
-	static final String RenderEngine = "ho";
+	static final String RenderEngine = "ip";
 	static final String RenderEngine_getTexture = "a";
 	
-	static final String TexturePackBase = "f";
+	static final String TexturePackBase = "h";
 	static final String TexturePackBase_getStream = "a";
 
-	static final String Tessellator = "lj";
+	static final String Tessellator = "na";
 	static final String Tessellator_instance = "a";
 	static final String Tessellator_draw = "a";
 	static final String Tessellator_reset = "d";
@@ -446,11 +446,11 @@ public class Hooks implements ModHooks {
 	static final String Tessellator_rawBuffer = "g";
 	static final String Tessellator_rawBufferIndex = "o";
 	
-	static final String Block = "ra";
+	static final String Block = "to";
 	static final String Block_lightValue = "s";
 	static final String Block_blockId = "bl";
 
-	static final String RenderBlocks = "ca";
+	static final String RenderBlocks = "cn";
 	static final String RenderBlocks_renderBottomFace = "a";
 	static final String RenderBlocks_renderTopFace = "b";
 	static final String RenderBlocks_renderEastFace = "c";
@@ -460,11 +460,11 @@ public class Hooks implements ModHooks {
 	static final String RenderBlocks_renderBlockByRenderType = "a";
 	static final String RenderBlocks_renderBlockByRenderType_sig = "(L"+Block+";III)Z";
 
-	static final String World = "eb";
+	static final String World = "et";
 	static final String World_getStarBrightness = "e";
 	static final String World_getBlockLightValue = "l";
 	
-	static final String RenderLiving = "fo";
+	static final String RenderLiving = "gk";
 	static final String RenderLiving_doRenderLiving = "a";
 
 	static final String Minecraft = "net.minecraft.client.Minecraft";
@@ -477,21 +477,21 @@ public class Hooks implements ModHooks {
 	static final String Minecraft_gameSettings = "y";
 	static final String Minecraft_displayGuiScreen = "a";
 
-	static final String GuiVideoSettings = "kw";
+	static final String GuiVideoSettings = "mn";
 	static final String GuiVideoSettings_initGui = "a";
 	static final String GuiVideoSettings_actionPerformed = "a";
 	static final String GuiVideoSettings_options = "l";
 
-	static final String GuiButton = "ih";
+	static final String GuiButton = "jk";
 	
 	static final String GuiScreen_width = "c";
 	static final String GuiScreen_height = "d";
 	static final String GuiScreen_controlList = "e";
 
-	static final String WorldRenderer = "cp";
+	static final String WorldRenderer = "dc";
 	static final String WorldRenderer_updateRenderer = "a";
 	static final String WorldRenderer_worldObj = "a";
 	
-	static final String GLAllocation = "ez";
+	static final String GLAllocation = "ft";
 	static final String GLAllocation_createDirectByteBuffer = "b";	
 }

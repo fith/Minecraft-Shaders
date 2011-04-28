@@ -435,7 +435,7 @@ public class Shaders {
 					lightSources[i].setSpecular(1.0F, 0.9F, 0.5F, 1.0F);
 				} else if (Block.blocksList[i] == Block.torchRedstoneActive) {
 					lightSources[i].setSpecular(1.0F, 0.0F, 0.0F, 1.0F);
-				} else if (Block.blocksList[i] == Block.lightStone) {
+				} else if (Block.blocksList[i] == Block.glowStone) {
 					lightSources[i].setSpecular(1.0F, 1.0F, 0.8F, 1.0F);
 				}
 			} else if (Item.itemsList[i] == Item.bucketLava) {

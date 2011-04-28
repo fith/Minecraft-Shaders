@@ -7,11 +7,11 @@
 	<key>Author</key>
 	<string>Compiled by fith using code from Daxnitro, Yourself, Miso and others to be added...</string>
 	<key>Identifier</key>
-	<string>com.daxnitro.myshaders</string>
+	<string>com.fith.myshaders</string>
 	<key>Version</key>
-	<string>1.1.1</string>
+	<string>1.1.2</string>
 	<key>MCVersions</key>
-	<string>B1.4.1</string>
+	<string>B1.5</string>
 	<key>ShortDescription</key>
 	<string>Bloom, static depth of field, waving wheat/grass/flowers/trees/water, luminance alpha water.</string>
 </dict>

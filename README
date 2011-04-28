@@ -1,7 +1,24 @@
 Double-click the Installer.jar.
 
-(to-do: write more instructions.) ;)
+source: https://github.com/fith/Minecraft-Shaders
 
+Info: 
+
+The shader mod installer was written by Daxnitro (see URLs below for more information).
+
+These shaders were compiled from a mix of code available on Daxnitro's Minecraft Shader wiki, and a few blog posts on GLSL (credits in code).
+
+Minecraft forum:
+http://www.minecraftforum.net/viewtopic.php?t=128043
+
+Daxnitro's shader wiki:
+http://daxnitro.wikia.com/wiki/Shaders
+
+Changelog:
+
+1.1.2
+- updated with daxnitro's 1.5 installer.
+- wrote README
 
 1.1.1
 - cleaned up code
@@ -9,5 +26,7 @@ Double-click the Installer.jar.
 - replaced old water color effects
 - water transparency based on wave height
 
+-first commit
 
 
+This project is just for enjoyment and making Minecraft look cooler.
